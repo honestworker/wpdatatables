@@ -1,2 +1,2 @@
 # wpdatatables
-Customized Wordpres Wpdatatable Plugin
+Customized Wordpress Wpdatatable Plugin
