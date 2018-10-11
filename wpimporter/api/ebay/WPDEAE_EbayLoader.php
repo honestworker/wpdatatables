@@ -538,42 +538,45 @@ if (!class_exists('WPDEAE_EbayLoader')):
                         }
                         $seller_id = trim($detail_xml->Item->Seller->UserID);
 
-                        $ship_price = WPDEAE_Goods::get_normalize_price($detail_xml->Item->shippingInfo->shippingServiceCost);
-
-                        if (get_option('wpdeae_ebay_using_woocommerce_currency', false) && get_woocommerce_currency() === trim(strval($detail_xml->Item->CurrentPrice['currencyID']))) {
-                            $price = round(WPDEAE_Goods::get_normalize_price($detail_xml->Item->CurrentPrice), 2);
-                        } else {
-                            $price = round(WPDEAE_Goods::get_normalize_price($detail_xml->Item->ConvertedCurrentPrice), 2);
-                        }
-                        if (isset($detail_xml->Item->Quantity)) {
-                            $quantity = intval($detail_xml->Item->Quantity);
-                            if (isset($detail_xml->Item->QuantitySold) && intval($detail_xml->Item->QuantitySold)) {
-                                $quantity -= intval($detail_xml->Item->QuantitySold);
+                        if ($status == 'active') {
+                            $ship_price = WPDEAE_Goods::get_normalize_price($detail_xml->Item->ShippingCostSummary->ShippingServiceCost);
+    
+                            if (get_option('wpdeae_ebay_using_woocommerce_currency', false) && get_woocommerce_currency() === trim(strval($detail_xml->Item->CurrentPrice['currencyID']))) {
+                                $price = round(WPDEAE_Goods::get_normalize_price($detail_xml->Item->CurrentPrice), 2);
+                            } else {
+                                $price = round(WPDEAE_Goods::get_normalize_price($detail_xml->Item->ConvertedCurrentPrice), 2);
                             }
-                        }
-                        $variation = $item_infos[$item_id];
-                        if ($variation) {
-                            $variation_split = explode(',', $variation);
-                            if (isset($detail_xml->Item->Variations)) {
-                                foreach ($detail_xml->Item->Variations->Variation as $variation) {
-                                    $variation_meta = array();
-                                    $count = 0;
-                                    if (isset($variation->VariationSpecifics)) {
-                                        foreach ($variation->VariationSpecifics->NameValueList as $value) {                                            
-                                            foreach ($variation_split as $variation) {
-                                                if (strtolower($value) == strtolower($variation)) {
-                                                    $count = $count + 1;
-                                                    break;
+                            
+                            if (isset($detail_xml->Item->Quantity)) {
+                                $quantity = intval($detail_xml->Item->Quantity);
+                                if (isset($detail_xml->Item->QuantitySold) && intval($detail_xml->Item->QuantitySold)) {
+                                    $quantity -= intval($detail_xml->Item->QuantitySold);
+                                }
+                            }
+                            $variation = $item_infos[$item_id];
+                            if ($variation) {
+                                $variation_split = explode(',', $variation);
+                                if (isset($detail_xml->Item->Variations)) {
+                                    foreach ($detail_xml->Item->Variations->Variation as $variation) {
+                                        $variation_meta = array();
+                                        $count = 0;
+                                        if (isset($variation->VariationSpecifics)) {
+                                            foreach ($variation->VariationSpecifics->NameValueList as $value) {
+                                                foreach ($variation_split as $variation) {
+                                                    if (strtolower($value) == strtolower($variation)) {
+                                                        $count = $count + 1;
+                                                        break;
+                                                    }
                                                 }
                                             }
-                                        }
-                                        if ($count >= count($variation_split)) {
-                                            $price = round(WPDEAE_Goods::get_normalize_price($variation->StartPrice), 2);
-                                            break;
+                                            if ($count >= count($variation_split)) {
+                                                $price = round(WPDEAE_Goods::get_normalize_price($variation->StartPrice), 2);
+                                                break;
+                                            }
                                         }
                                     }
-                                }
-                            } 
+                                } 
+                            }
                         }
                     }
 
@@ -658,39 +661,41 @@ if (!class_exists('WPDEAE_EbayLoader')):
                         }
                         $seller_id = trim($detail_xml->Item->Seller->UserID);
 
-                        $ship_price = WPDEAE_Goods::get_normalize_price($detail_xml->Item->shippingInfo->shippingServiceCost);
+                        if ($status == 'active') {
+                            $ship_price = WPDEAE_Goods::get_normalize_price($detail_xml->Item->ShippingCostSummary->ShippingServiceCost);
 
-                        $variation = $item_infos[$item_id]['variation'];
-                        if (get_option('wpdeae_ebay_using_woocommerce_currency', false) && get_woocommerce_currency() === trim(strval($detail_xml->Item->CurrentPrice['currencyID']))) {
-                            $price = round(WPDEAE_Goods::get_normalize_price($detail_xml->Item->CurrentPrice), 2);
-                        } else {
-                            $price = round(WPDEAE_Goods::get_normalize_price($detail_xml->Item->ConvertedCurrentPrice), 2);
-                        }
-                        if (isset($detail_xml->Item->Quantity)) {
-                            $quantity = intval($detail_xml->Item->Quantity);
-                            if (isset($detail_xml->Item->QuantitySold) && intval($detail_xml->Item->QuantitySold)) {
-                                $quantity -= intval($detail_xml->Item->QuantitySold);
+                            $variation = $item_infos[$item_id]['variation'];
+                            if (get_option('wpdeae_ebay_using_woocommerce_currency', false) && get_woocommerce_currency() === trim(strval($detail_xml->Item->CurrentPrice['currencyID']))) {
+                                $price = round(WPDEAE_Goods::get_normalize_price($detail_xml->Item->CurrentPrice), 2);
+                            } else {
+                                $price = round(WPDEAE_Goods::get_normalize_price($detail_xml->Item->ConvertedCurrentPrice), 2);
                             }
-                        }
-                        if ($variation) {
-                            $variation_split = explode(',', $variation);
-                            if (isset($detail_xml->Item->Variations)) {
-                                foreach ($detail_xml->Item->Variations->Variation as $variation) {
-                                    $variation_meta = array();
-                                    $count = 0;
-                                    if (isset($variation->VariationSpecifics)) {
-                                        foreach ($variation->VariationSpecifics->NameValueList as $value) {                                            
-                                            foreach ($variation_split as $variation) {
-                                                if (strtolower($value) == strtolower($variation)) {
-                                                    $count = $count + 1;
-                                                    break;
+                            if (isset($detail_xml->Item->Quantity)) {
+                                $quantity = intval($detail_xml->Item->Quantity);
+                                if (isset($detail_xml->Item->QuantitySold) && intval($detail_xml->Item->QuantitySold)) {
+                                    $quantity -= intval($detail_xml->Item->QuantitySold);
+                                }
+                            }
+                            if ($variation) {
+                                $variation_split = explode(',', $variation);
+                                if (isset($detail_xml->Item->Variations)) {
+                                    foreach ($detail_xml->Item->Variations->Variation as $variation) {
+                                        $variation_meta = array();
+                                        $count = 0;
+                                        if (isset($variation->VariationSpecifics)) {
+                                            foreach ($variation->VariationSpecifics->NameValueList as $value) {
+                                                foreach ($variation_split as $variation) {
+                                                    if (strtolower($value) == strtolower($variation)) {
+                                                        $count = $count + 1;
+                                                        break;
+                                                    }
                                                 }
                                             }
-                                        }
-                                        if ($count >= count($variation_split)) {
-                                            $quantity = $variation->Quantity - $variation->SellingStatus->QuantitySold;
-                                            $price = round(WPDEAE_Goods::get_normalize_price($variation->StartPrice), 2);
-                                            break;
+                                            if ($count >= count($variation_split)) {
+                                                $quantity = $variation->Quantity - $variation->SellingStatus->QuantitySold;
+                                                $price = round(WPDEAE_Goods::get_normalize_price($variation->StartPrice), 2);
+                                                break;
+                                            }
                                         }
                                     }
                                 }
@@ -702,7 +707,7 @@ if (!class_exists('WPDEAE_EbayLoader')):
                         $update_statement = "UPDATE {$table}
                            SET wdtcolumn2 = \"{$status}\", wdtcolumn3 = \"{$quantity}\",
                            wdtcolumn4 = \"{$price}\", wdtcolumn5 = \"{$ship_price}\",
-                           wdtcolumn6 = \"{$total_price}\"
+                           wdtcolumn6 = \"{$total_price}\", seller = \"{$seller_id}\"
                            WHERE userid = " . get_current_user_id() . " AND wdt_ID = {$wdt_id}"; 
 
                         $wpdb->query($update_statement);
